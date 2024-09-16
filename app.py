@@ -11,7 +11,6 @@ DB_NAME = 'nube1'
 DB_USER = 'nube1_user'
 DB_PASSWORD = 'Zgskprq80K2LLNcmc9c5Urx4FJR7ZX16'
 
-
 def conectar_db():
     try:
         conn = psycopg2.connect(
@@ -19,7 +18,6 @@ def conectar_db():
         return conn
     except psycopg2.Error as e:
         print("Error al conectar a la base de datos:", e)
-
 
 def crear_persona(dni, nombre, apellido, direccion, telefono):
     conn = conectar_db()
@@ -30,10 +28,9 @@ def crear_persona(dni, nombre, apellido, direccion, telefono):
     conn.close()
 
 def obtener_registros():
-    conn = psycopg2.connect(
-        dbname=DB_NAME, user=DB_USER, password=DB_PASSWORD, host=DB_HOST)
-    cursor=conn.cursor()
-    cursor.execute("SELECT * FROM personas order by apellido")
+    conn = conectar_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM personas ORDER BY apellido")
     registros = cursor.fetchall()
     conn.close()
     return registros
@@ -55,20 +52,18 @@ def registrar():
 
 @app.route('/administrar')
 def administrar():
-    registros=obtener_registros()
-    return render_template('administrar.html',registros=registros)
+    registros = obtener_registros()
+    return render_template('administrar.html', registros=registros)
 
 @app.route('/eliminar/<dni>', methods=['POST'])
 def eliminar_registro(dni):
-    conn = psycopg2.connect(
-        dbname=DB_NAME, user=DB_USER, password=DB_PASSWORD, host=DB_HOST)
-    cursor=conn.cursor()
+    conn = conectar_db()
+    cursor = conn.cursor()
     cursor.execute("DELETE FROM personas WHERE dni = %s", (dni,))
     conn.commit()
     conn.close()
     return redirect(url_for('administrar'))
 
 if __name__ == '__main__':
-    #Esto es nuevo
-    port = int(os.environ.get('PORT',5000))    
+    port = int(os.environ.get('PORT', 5000))    
     app.run(host='0.0.0.0', port=port, debug=True)
