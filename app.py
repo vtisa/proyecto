@@ -18,22 +18,52 @@ def conectar_db():
         return conn
     except psycopg2.Error as e:
         print("Error al conectar a la base de datos:", e)
+        return None
 
 def crear_persona(dni, nombre, apellido, direccion, telefono):
     conn = conectar_db()
-    cursor = conn.cursor()
-    cursor.execute("INSERT INTO personas (dni, nombre, apellido, direccion, telefono) VALUES (%s, %s, %s, %s, %s)",
-                   (dni, nombre, apellido, direccion, telefono))
-    conn.commit()
-    conn.close()
+    if conn:
+        try:
+            cursor = conn.cursor()
+            cursor.execute("INSERT INTO personas (dni, nombre, apellido, direccion, telefono) VALUES (%s, %s, %s, %s, %s)",
+                           (dni, nombre, apellido, direccion, telefono))
+            conn.commit()
+        except psycopg2.Error as e:
+            print("Error al crear persona:", e)
+            conn.rollback()
+        finally:
+            conn.close()
 
 def obtener_registros():
     conn = conectar_db()
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM personas ORDER BY apellido")
-    registros = cursor.fetchall()
-    conn.close()
-    return registros
+    if conn:
+        try:
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM personas ORDER BY apellido")
+            registros = cursor.fetchall()
+            return registros
+        except psycopg2.Error as e:
+            print("Error al obtener registros:", e)
+            return []
+        finally:
+            conn.close()
+    return []
+
+def eliminar_persona(dni):
+    conn = conectar_db()
+    if conn:
+        try:
+            cursor = conn.cursor()
+            cursor.execute("DELETE FROM personas WHERE dni = %s", (dni,))
+            conn.commit()
+            return True
+        except psycopg2.Error as e:
+            print("Error al eliminar persona:", e)
+            conn.rollback()
+            return False
+        finally:
+            conn.close()
+    return False
 
 @app.route('/')
 def index():
@@ -47,8 +77,7 @@ def registrar():
     direccion = request.form['direccion']
     telefono = request.form['telefono']
     crear_persona(dni, nombre, apellido, direccion, telefono)
-    mensaje_confirmacion = "Registro Exitoso"
-    return redirect(url_for('index', mensaje_confirmacion=mensaje_confirmacion))
+    return redirect(url_for('administrar'))
 
 @app.route('/administrar')
 def administrar():
@@ -57,12 +86,10 @@ def administrar():
 
 @app.route('/eliminar/<dni>', methods=['POST'])
 def eliminar_registro(dni):
-    conn = conectar_db()
-    cursor = conn.cursor()
-    cursor.execute("DELETE FROM personas WHERE dni = %s", (dni,))
-    conn.commit()
-    conn.close()
-    return redirect(url_for('administrar'))
+    if eliminar_persona(dni):
+        return redirect(url_for('administrar'))
+    else:
+        return "Error al eliminar el registro", 500
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))    
