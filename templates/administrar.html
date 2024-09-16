@@ -27,46 +27,36 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Administrar Registros</h1>
-        
-        {% with messages = get_flashed_messages(with_categories=true) %}
-          {% if messages %}
-            {% for category, message in messages %}
-              <div class="flash-{{ category }}">{{ message }}</div>
+    <h1>Administrar Registros</h1>
+    <a href="{{ url_for('index') }}">Agregar Nuevo Registro</a>
+    <br><br>
+    <table>
+        <thead>
+            <tr>
+                <th>DNI</th>
+                <th>Nombre</th>
+                <th>Apellido</th>
+                <th>Dirección</th>
+                <th>Teléfono</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for registro in registros %}
+            <tr>
+                <td>{{ registro[0] }}</td>
+                <td>{{ registro[1] }}</td>
+                <td>{{ registro[2] }}</td>
+                <td>{{ registro[3] }}</td>
+                <td>{{ registro[4] }}</td>
+                <td>
+                    <form action="{{ url_for('eliminar_registro', dni=registro[0]) }}" method="post" onsubmit="return confirm('¿Estás seguro de que quieres eliminar este registro?');">
+                        <button type="submit" class="btn-delete">Eliminar</button>
+                    </form>
+                </td>
+            </tr>
             {% endfor %}
-          {% endif %}
-        {% endwith %}
-        
-        <a href="/">Agregar Nuevo Registro</a>
-        <table>
-            <thead>
-                <tr>
-                    <th>DNI</th>
-                    <th>Nombre</th>
-                    <th>Apellido</th>
-                    <th>Dirección</th>
-                    <th>Teléfono</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for registro in registros %}
-                <tr>
-                    <td>{{ registro[0] }}</td>
-                    <td>{{ registro[1] }}</td>
-                    <td>{{ registro[2] }}</td>
-                    <td>{{ registro[3] }}</td>
-                    <td>{{ registro[4] }}</td>
-                    <td>
-                        <form action="{{ url_for('eliminar_registro', dni=registro[0]) }}" method="post" onsubmit="return confirm('¿Estás seguro de que quieres eliminar este registro?');">
-                            <button type="submit" class="btn-delete">Eliminar</button>
-                        </form>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+        </tbody>
+    </table>
 </body>
 </html>
