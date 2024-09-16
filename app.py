@@ -9,7 +9,7 @@ app = Flask(__name__, template_folder='templates')
 DB_HOST = 'dpg-crk8f408fa8c7396nchg-a.oregon-postgres.render.com'
 DB_NAME = 'nube1'
 DB_USER = 'nube1_user'
-DB_PASSWORD = 'Zgskprq80K2LLNcmc9c5Urx4FJR7ZX16'
+DB_PASSWORD ='Zgskprq80K2LLNcmc9c5Urx4FJR7ZX16'
 
 def conectar_db():
     try:
