@@ -15,7 +15,7 @@
         <table>
             <thead>
                 <tr>
-                    <th>ID</th>
+                  
                     <th>DNI</th>
                     <th>Nombre</th>
                     <th>Apellido</th>
@@ -27,14 +27,14 @@
             <tbody>
                 {% for registro in registros %}
                 <tr>
-                    <td>{{ registro[0] }}</td> <!-- ID -->
+                 
                     <td>{{ registro[1] }}</td> <!-- DNI -->
                     <td>{{ registro[2] }}</td> <!-- Nombre -->
                     <td>{{ registro[3] }}</td> <!-- Apellido -->
                     <td>{{ registro[4] }}</td> <!-- Dirección -->
                     <td>{{ registro[5] }}</td> <!-- Teléfono -->
                     <td>
-                        <form action="/eliminar/{{ registro[0] }}" method="post" style="display:inline;">
+                        <form action="/eliminar/{{ registro[1] }}" method="post" style="display:inline;">
                             <button type="submit" class="btn-eliminar">Eliminar</button>
                         </form>
                     </td>
