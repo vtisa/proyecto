@@ -1,9 +1,11 @@
-from flask import Flask, render_template, request, redirect, url_for
-from flask import jsonify
+from flask import Flask, render_template, request, redirect, url_for, flash
+from flask_wtf.csrf import CSRFProtect
 import psycopg2
 import os
 
 app = Flask(__name__, template_folder='templates')
+app.secret_key = 'una_clave_secreta_muy_segura'  # Necesario para usar flash y CSRF
+csrf = CSRFProtect(app)
 
 # Configuración de la base de datos
 DB_HOST = 'dpg-crk8f408fa8c7396nchg-a.oregon-postgres.render.com'
@@ -20,43 +22,15 @@ def conectar_db():
         print("Error al conectar a la base de datos:", e)
         return None
 
-def crear_persona(dni, nombre, apellido, direccion, telefono):
-    conn = conectar_db()
-    if conn:
-        try:
-            cursor = conn.cursor()
-            cursor.execute("INSERT INTO personas (dni, nombre, apellido, direccion, telefono) VALUES (%s, %s, %s, %s, %s)",
-                           (dni, nombre, apellido, direccion, telefono))
-            conn.commit()
-        except psycopg2.Error as e:
-            print("Error al crear persona:", e)
-            conn.rollback()
-        finally:
-            conn.close()
-
-def obtener_registros():
-    conn = conectar_db()
-    if conn:
-        try:
-            cursor = conn.cursor()
-            cursor.execute("SELECT * FROM personas ORDER BY apellido")
-            registros = cursor.fetchall()
-            return registros
-        except psycopg2.Error as e:
-            print("Error al obtener registros:", e)
-            return []
-        finally:
-            conn.close()
-    return []
-
 def eliminar_persona(dni):
     conn = conectar_db()
     if conn:
         try:
             cursor = conn.cursor()
             cursor.execute("DELETE FROM personas WHERE dni = %s", (dni,))
+            affected_rows = cursor.rowcount
             conn.commit()
-            return True
+            return affected_rows > 0
         except psycopg2.Error as e:
             print("Error al eliminar persona:", e)
             conn.rollback()
@@ -65,18 +39,14 @@ def eliminar_persona(dni):
             conn.close()
     return False
 
-@app.route('/')
-def index():
-    return render_template('index.html')
-
-@app.route('/registrar', methods=['POST'])
-def registrar():
-    dni = request.form['dni']
-    nombre = request.form['nombre']
-    apellido = request.form['apellido']
-    direccion = request.form['direccion']
-    telefono = request.form['telefono']
-    crear_persona(dni, nombre, apellido, direccion, telefono)
+@app.route('/eliminar', methods=['POST'])
+@csrf.exempt
+def eliminar_registro():
+    dni = request.form.get('dni')
+    if dni and eliminar_persona(dni):
+        flash('Registro eliminado con éxito', 'success')
+    else:
+        flash('Error al eliminar el registro', 'error')
     return redirect(url_for('administrar'))
 
 @app.route('/administrar')
@@ -84,12 +54,7 @@ def administrar():
     registros = obtener_registros()
     return render_template('administrar.html', registros=registros)
 
-@app.route('/eliminar/<dni>', methods=['POST'])
-def eliminar_registro(dni):
-    if eliminar_persona(dni):
-        return redirect(url_for('administrar'))
-    else:
-        return "Error al eliminar el registro", 500
+# ... (resto del código permanece igual)
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))    
