@@ -1,10 +1,9 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session
+from flask import Flask, render_template, request, redirect, url_for, flash
 import psycopg2
 import os
-import secrets
 
 app = Flask(__name__, template_folder='templates')
-app.secret_key = 'una_clave_secreta_muy_segura'  # Necesario para usar flash y session
+app.secret_key = 'una_clave_secreta_muy_segura'  # Necesario para usar flash
 
 # Configuración de la base de datos
 DB_HOST = 'dpg-crk8f408fa8c7396nchg-a.oregon-postgres.render.com'
@@ -27,9 +26,8 @@ def eliminar_persona(dni):
         try:
             cursor = conn.cursor()
             cursor.execute("DELETE FROM personas WHERE dni = %s", (dni,))
-            affected_rows = cursor.rowcount
             conn.commit()
-            return affected_rows > 0
+            return True
         except psycopg2.Error as e:
             print("Error al eliminar persona:", e)
             conn.rollback()
@@ -44,8 +42,7 @@ def obtener_registros():
         try:
             cursor = conn.cursor()
             cursor.execute("SELECT * FROM personas ORDER BY apellido")
-            registros = cursor.fetchall()
-            return registros
+            return cursor.fetchall()
         except psycopg2.Error as e:
             print("Error al obtener registros:", e)
             return []
@@ -53,14 +50,9 @@ def obtener_registros():
             conn.close()
     return []
 
-@app.route('/eliminar', methods=['POST'])
-def eliminar_registro():
-    if request.form.get('_csrf_token') != session.get('_csrf_token'):
-        flash('Error de seguridad', 'error')
-        return redirect(url_for('administrar'))
-    
-    dni = request.form.get('dni')
-    if dni and eliminar_persona(dni):
+@app.route('/eliminar/<dni>', methods=['POST'])
+def eliminar_registro(dni):
+    if eliminar_persona(dni):
         flash('Registro eliminado con éxito', 'success')
     else:
         flash('Error al eliminar el registro', 'error')
@@ -68,24 +60,12 @@ def eliminar_registro():
 
 @app.route('/administrar')
 def administrar():
-    if '_csrf_token' not in session:
-        session['_csrf_token'] = secrets.token_hex(16)
     registros = obtener_registros()
-    return render_template('administrar.html', registros=registros, csrf_token=session['_csrf_token'])
+    return render_template('administrar.html', registros=registros)
 
 @app.route('/')
 def index():
     return render_template('index.html')
-
-@app.route('/registrar', methods=['POST'])
-def registrar():
-    dni = request.form['dni']
-    nombre = request.form['nombre']
-    apellido = request.form['apellido']
-    direccion = request.form['direccion']
-    telefono = request.form['telefono']
-    crear_persona(dni, nombre, apellido, direccion, telefono)
-    return redirect(url_for('administrar'))
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))    

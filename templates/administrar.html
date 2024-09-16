@@ -4,23 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Administrar Registros</title>
-    <link rel="stylesheet" href="/static/styles.css">
     <style>
-        /* ... (estilos anteriores) ... */
-        .flash-message {
-            padding: 10px;
-            margin-bottom: 10px;
-            border-radius: 5px;
+        table {
+            width: 100%;
+            border-collapse: collapse;
         }
-        .flash-success {
-            background-color: #d4edda;
-            border-color: #c3e6cb;
-            color: #155724;
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
         }
-        .flash-error {
-            background-color: #f8d7da;
-            border-color: #f5c6cb;
-            color: #721c24;
+        th {
+            background-color: #f2f2f2;
+        }
+        .btn-delete {
+            background-color: #ff4444;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
         }
     </style>
 </head>
@@ -31,12 +33,12 @@
         {% with messages = get_flashed_messages(with_categories=true) %}
           {% if messages %}
             {% for category, message in messages %}
-              <div class="flash-message flash-{{ category }}">{{ message }}</div>
+              <div class="flash-{{ category }}">{{ message }}</div>
             {% endfor %}
           {% endif %}
         {% endwith %}
         
-        <a href="/" class="btn btn-add">Agregar Nuevo Registro</a>
+        <a href="/">Agregar Nuevo Registro</a>
         <table>
             <thead>
                 <tr>
@@ -57,10 +59,8 @@
                     <td>{{ registro[3] }}</td>
                     <td>{{ registro[4] }}</td>
                     <td>
-                        <form action="{{ url_for('eliminar_registro') }}" method="post" onsubmit="return confirm('¿Estás seguro de que quieres eliminar este registro?');">
-                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                            <input type="hidden" name="dni" value="{{ registro[0] }}">
-                            <button type="submit" class="btn btn-delete">Eliminar</button>
+                        <form action="{{ url_for('eliminar_registro', dni=registro[0]) }}" method="post" onsubmit="return confirm('¿Estás seguro de que quieres eliminar este registro?');">
+                            <button type="submit" class="btn-delete">Eliminar</button>
                         </form>
                     </td>
                 </tr>
