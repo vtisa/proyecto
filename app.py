@@ -29,13 +29,13 @@ def crear_persona(dni, nombre, apellido, direccion, telefono):
     conn.close()
 
 def obtener_registros():
-    conn = psycopg2.connect(
-        dbname=DB_NAME, user=DB_USER, password=DB_PASSWORD, host=DB_HOST)
-    cursor=conn.cursor()
-    cursor.execute("SELECT * FROM personas order by apellido")
+    conn = conectar_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, dni, nombre, apellido, direccion, telefono FROM personas ORDER BY apellido")
     registros = cursor.fetchall()
     conn.close()
     return registros
+
 
 @app.route('/')
 def index():
@@ -57,15 +57,21 @@ def administrar():
     registros=obtener_registros()
     return render_template('administrar.html',registros=registros)
 
-@app.route('/eliminar/<dni>', methods=['POST'])
-def eliminar_registro(dni):
-    conn = psycopg2.connect(
-        dbname=DB_NAME, user=DB_USER, password=DB_PASSWORD, host=DB_HOST)
-    cursor=conn.cursor()
-    cursor.execute("DELETE FROM personas WHERE dni = %s", (dni,))
-    conn.commit()
-    conn.close()
+@app.route('/eliminar/<int:id>', methods=['POST'])
+def eliminar_registro(id):
+    conn = conectar_db()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("DELETE FROM personas WHERE id = %s", (id,))
+        conn.commit()
+        print(f"Registro con ID {id} eliminado correctamente.")
+    except psycopg2.Error as e:
+        print(f"Error al eliminar registro: {e}")
+    finally:
+        cursor.close()
+        conn.close()
     return redirect(url_for('administrar'))
+
 
 if __name__ == '__main__':
     #Esto es nuevo
