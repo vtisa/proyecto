@@ -28,11 +28,11 @@
                 {% for registro in registros %}
                 <tr>
                  
-                    <td>{{ registro[1] }}</td> <!-- DNI -->
-                    <td>{{ registro[2] }}</td> <!-- Nombre -->
-                    <td>{{ registro[3] }}</td> <!-- Apellido -->
-                    <td>{{ registro[4] }}</td> <!-- Dirección -->
-                    <td>{{ registro[5] }}</td> <!-- Teléfono -->
+                    <td>{{ registro[0] }}</td> <!-- DNI -->
+                    <td>{{ registro[1] }}</td> <!-- Nombre -->
+                    <td>{{ registro[2] }}</td> <!-- Apellido -->
+                    <td>{{ registro[3] }}</td> <!-- Dirección -->
+                    <td>{{ registro[4] }}</td> <!-- Teléfono -->
                     <td>
                         <form action="/eliminar/{{ registro[1] }}" method="post" style="display:inline;">
                             <button type="submit" class="btn-eliminar">Eliminar</button>

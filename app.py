@@ -31,7 +31,7 @@ def crear_persona(dni, nombre, apellido, direccion, telefono):
 def obtener_registros():
     conn = conectar_db()
     cursor = conn.cursor()
-    cursor.execute("SELECT id, dni, nombre, apellido, direccion, telefono FROM personas ORDER BY apellido")
+    cursor.execute("SELECT dni, nombre, apellido, direccion, telefono FROM personas ORDER BY apellido")
     registros = cursor.fetchall()
     conn.close()
     return registros
